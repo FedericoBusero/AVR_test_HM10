@@ -131,7 +131,7 @@ void setup() {
   BLECmd(timeout, "AT+TYPE?", buffer);
   BLECmd(timeout, "AT+POWE?", buffer); // Show power (should be 2 or 3)
   BLECmd(timeout, "AT+NOTI?", buffer); // Check the current notification bit
-  BLECmd(timeout, "AT+NOTI0", buffer); // Make sure the module doesn't send AT+CONNECT or AT+LOST on the serial line
+  BLECmd(timeout, "AT+NOTI0", buffer); // Make sure the module doesn't send AT+CONNECT or AT+LOST on the serial line (very important for Blynk users)
 
   //  BLECmd(timeout,"AT+NAMEHM10",buffer); // Set the name of the module to HM10
 
