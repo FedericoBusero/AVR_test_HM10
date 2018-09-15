@@ -1,8 +1,21 @@
 /*
+/*
   Arduino BLE Shield (HM-10) Testing Sketch
   by JP Liew http://jpliew.com
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  Changes by FedericoBusero
+
+  Changes by FedericoBusero:
+  - set notification OFF (necessary for Blynk)
 */
 
 #include <SoftwareSerial.h>
@@ -11,8 +24,11 @@
 
 #define LED_PIN 13
 
-// SoftwareSerial ble(2, 3);       // For Uno, HM10 TX pin to Arduino Uno pin D2, HM10 RX pin to Arduino Uno pin D3
-SoftwareSerial ble(10,11);      // For Uno, HM10 TX pin to Arduino Uno pin 10, HM10 RX pin to Arduino Uno pin 11
+SoftwareSerial ble(2, 3);       // For Uno, HM10 TX pin to Arduino Uno pin D2, HM10 RX pin to Arduino Uno pin D3
+// SoftwareSerial ble(10,11);      // For Uno, HM10 TX pin to Arduino Uno pin 10, HM10 RX pin to Arduino Uno pin 11
+#define SERIAL_BLE ble
+
+// #define SERIAL_BLE Serial1 // For Mega, ... HM10 TX pin to Arduino RX ping, HM10 TX pin to Arduino RX pin
 
 char buffer[BUFFER_LENGTH];       // Buffer to store response
 int timeout = 800;          // Wait 800ms each time for BLE to response, depending on your application, adjust this value accordingly
@@ -24,7 +40,7 @@ long BLEAutoBaud() {
     for (int x = 0; x < 3; x++) { // test at least 3 times for each baud
       Serial.print("Testing baud ");
       Serial.println(bauds[i]);
-      ble.begin(bauds[i]);
+      SERIAL_BLE.begin(bauds[i]);
       if (BLEIsReady()) {
         return bauds[i];
       }
@@ -46,17 +62,17 @@ boolean BLECmd(long timeout, char* command, char* temp) {
   long endtime;
   boolean found = false;
   endtime = millis() + timeout; //
-  memset(temp, 0, 100);       // clear buffer
+  memset(temp, 0, BUFFER_LENGTH);       // clear buffer
   found = true;
   Serial.print("Arduino send = ");
   Serial.println(command);
-  ble.print(command);
+  SERIAL_BLE.print(command);
 
   // The loop below wait till either a response is received or timeout
   // The problem with this BLE Shield is most of the HM-10 modules do not response with CR LF at the end of the response,
   // so a timeout is required to detect end of response and also prevent the loop locking up.
 
-  while (!ble.available()) {
+  while (!SERIAL_BLE.available()) {
     if (millis() > endtime) {   // timeout, break
       found = false;
       break;
@@ -65,8 +81,8 @@ boolean BLECmd(long timeout, char* command, char* temp) {
 
   if (found) {            // response is available
     int i = 0;
-    while (ble.available()) {   // loop and read the data
-      char a = ble.read();
+    while (SERIAL_BLE.available()) {   // loop and read the data
+      char a = SERIAL_BLE.read();
       // Serial.print((char)a); // Uncomment this to see raw data from BLE
       temp[i] = a;        // save data to buffer
       i++;
@@ -138,8 +154,8 @@ void printhex(unsigned char c)
 }
 
 void loop() {
-  if (ble.available()) {
-    char c = (char)ble.read();
+  if (SERIAL_BLE.available()) {
+    char c = (char)SERIAL_BLE.read();
     if (isPrintable(c))
     {
       Serial.print(c);
